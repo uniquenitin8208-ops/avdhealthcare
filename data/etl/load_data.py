@@ -13,7 +13,7 @@ storage_client = storage.Client()
 bq_client = bigquery.Client()
 
 # Google Cloud Storage (GCS) Configuration
-GCS_BUCKET = " avd-bucket-healthcare"
+GCS_BUCKET = "avd-bucket-healthcare"
 HOSPITAL_NAME = "healthcare"
 LANDING_PATH = f"gs://{GCS_BUCKET}/landing/{HOSPITAL_NAME}/"
 ARCHIVE_PATH = f"gs://{GCS_BUCKET}/landing/{HOSPITAL_NAME}/archive/"
