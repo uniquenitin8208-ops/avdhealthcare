@@ -1,17 +1,17 @@
--- encounter_summary
-CREATE TABLE IF NOT EXISTS `project-1bb5b715-2af0-445a-b7a.encounter_summary` (
+-- 1️⃣ Encounter Summary
+CREATE TABLE IF NOT EXISTS `project-1bb5b715-2af0-445a-b7a.gold_dataset.encounter_summary` (
     DepartmentID STRING,
     DepartmentName STRING,
-    Year INT,
+    Year INT64,
     EncounterType STRING,
-    TotalEncounters INT,
-    UniquePatients INT,
-    UniqueProcedures INT
+    TotalEncounters INT64,
+    UniquePatients INT64,
+    UniqueProcedures INT64
 );
 
-TRUNCATE TABLE `project-1bb5b715-2af0-445a-b7a.encounter_summary`;
+TRUNCATE TABLE `project-1bb5b715-2af0-445a-b7a.gold_dataset.encounter_summary`;
 
-INSERT INTO `project-1bb5b715-2af0-445a-b7a.encounter_summary`
+INSERT INTO `project-1bb5b715-2af0-445a-b7a.gold_dataset.encounter_summary`
 SELECT
   CAST(e.DepartmentID AS STRING) AS DepartmentID,
   d.name AS DepartmentName,
@@ -23,25 +23,23 @@ SELECT
 FROM `silver_dataset.encounters` e
 JOIN `silver_dataset.departments` d 
   ON e.DepartmentID = d.dept_id
-GROUP BY 
-  e.DepartmentID, d.name, Year, e.EncounterType;
+GROUP BY e.DepartmentID, d.name, Year, e.EncounterType;
 
--------------------------
-
-CREATE TABLE IF NOT EXISTS `project-1bb5b715-2af0-445a-b7a.provider_performance_summary` (
+-- 2️⃣ Provider Performance Summary
+CREATE TABLE IF NOT EXISTS `project-1bb5b715-2af0-445a-b7a.gold_dataset.provider_performance_summary` (
     ProviderID STRING,
     FirstName STRING,
     LastName STRING,
     Specialization STRING,
-    TotalEncounters INT,
+    TotalEncounters INT64,
     AvgBilledAmount FLOAT64,
     AvgPaidAmount FLOAT64,
     ClaimApprovalRate FLOAT64
 );
 
-TRUNCATE TABLE `project-1bb5b715-2af0-445a-b7a.provider_performance_summary`;
+TRUNCATE TABLE `project-1bb5b715-2af0-445a-b7a.gold_dataset.provider_performance_summary`;
 
-INSERT INTO `project-1bb5b715-2af0-445a-b7a.provider_performance_summary`
+INSERT INTO `project-1bb5b715-2af0-445a-b7a.gold_dataset.provider_performance_summary`
 SELECT
   p.ProviderID,
   p.FirstName,
@@ -57,23 +55,22 @@ JOIN `silver_dataset.encounters` e
 JOIN `silver_dataset.transactions` t 
   ON e.EncounterID = t.EncounterID
 JOIN `silver_dataset.claims` c 
-  ON t.TransactionID = c.transaction_id
-GROUP BY 
-  p.ProviderID, p.FirstName, p.LastName, p.Specialization;
+  ON t.TransactionID = c.transaction_ID
+GROUP BY p.ProviderID, p.FirstName, p.LastName, p.Specialization;
 
------------------------------
-CREATE TABLE IF NOT EXISTS `project-1bb5b715-2af0-445a-b7a.patient_billing_summary` (
+-- 3️⃣ Patient Billing Summary
+CREATE TABLE IF NOT EXISTS `project-1bb5b715-2af0-445a-b7a.gold_dataset.patient_billing_summary` (
     PatientID STRING,
-    TotalEncounters INT,
+    TotalEncounters INT64,
     TotalBilled FLOAT64,
     TotalPaid FLOAT64,
-    TotalClaims INT,
+    TotalClaims INT64,
     AvgDeductible FLOAT64
 );
 
-TRUNCATE TABLE `project-1bb5b715-2af0-445a-b7a.patient_billing_summary`;
+TRUNCATE TABLE `project-1bb5b715-2af0-445a-b7a.gold_dataset.patient_billing_summary`;
 
-INSERT INTO `project-1bb5b715-2af0-445a-b7a.patient_billing_summary`
+INSERT INTO `project-1bb5b715-2af0-445a-b7a.gold_dataset.patient_billing_summary`
 SELECT
   t.PatientID,
   COUNT(DISTINCT t.EncounterID) AS TotalEncounters,
@@ -86,20 +83,19 @@ JOIN `silver_dataset.claims` c
   ON t.TransactionID = c.transaction_ID
 GROUP BY t.PatientID;
 
---------------------------------------------------------
-
-CREATE TABLE IF NOT EXISTS `project-1bb5b715-2af0-445a-b7a.claims_summary_by_status_payor` (
+-- 4️⃣ Claims Summary by Status and Payor
+CREATE TABLE IF NOT EXISTS `project-1bb5b715-2af0-445a-b7a.gold_dataset.claims_summary_by_status_payor` (
     claim_status STRING,
     payor_type STRING,
-    Year INT,
-    TotalClaims INT,
+    Year INT64,
+    TotalClaims INT64,
     TotalClaimAmount FLOAT64,
     TotalPaidAmount FLOAT64
 );
 
-TRUNCATE TABLE `project-1bb5b715-2af0-445a-b7a.claims_summary_by_status_payor`;
+TRUNCATE TABLE `project-1bb5b715-2af0-445a-b7a.gold_dataset.claims_summary_by_status_payor`;
 
-INSERT INTO `project-1bb5b715-2af0-445a-b7a.claims_summary_by_status_payor`
+INSERT INTO `project-1bb5b715-2af0-445a-b7a.gold_dataset.claims_summary_by_status_payor`
 SELECT
   c.claim_status,
   c.payor_type,
@@ -109,6 +105,3 @@ SELECT
   SUM(c.paid_amount) AS TotalPaidAmount
 FROM `silver_dataset.claims` c
 GROUP BY c.claim_status, c.payor_type, Year;
-
--------------------------------------------
-
